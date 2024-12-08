@@ -1,46 +1,57 @@
 import 'package:flutter/material.dart';
 
+import '../model/product.dart';
 import '../screens/update_product_screen.dart';
 
 class ProductItem extends StatelessWidget {
-  const ProductItem({super.key});
+  Product product;
+  VoidCallback? onDeleteTab;
+  ProductItem({required this.product, this.onDeleteTab});
 
   @override
   Widget build(BuildContext context) {
-    return  Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          leading: Image.network(
-              'https://adminapi.applegadgetsbd.com/storage/media/large/iPhone-14-Starlight-8954.jpg'),
-          title: const Text('Iphone 14'),
-          subtitle: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Product Code: #CODE'),
-              Text('Quantity: 12'),
-              Text('Price: 34535'),
-              Text('Total Price: 23232323'),
-            ],
-          ),
-          trailing: Wrap(
-            children: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.delete)),
-              IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, UpdateProductScreen.name);
-                },
-                icon: const Icon(Icons.edit),
-              ),
-            ],
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ListTile(
+        leading: Image(
+          height: 100,
+          width: 70,
+          image: NetworkImage('${product.image}'),
+          errorBuilder: (context, error, stackTrace) {
+            return Image.network(
+                'https://static.thenounproject.com/png/1211233-200.png');
+          },
         ),
-        Divider(
-          height: 0.3,
-          color: Colors.grey.shade200,
-        )
-      ],
+        title: Text(product.productName ?? ''),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Product Code: ${product.productCode ?? ''}'),
+            Text('Quantity:  ${product.quantity ?? ''}'),
+            Text('Price:  ${product.unitPrice ?? ''}'),
+            Text('Total Price:  ${product.totalPrice ?? ''}'),
+          ],
+        ),
+        trailing: Wrap(
+          children: [
+            IconButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  UpdateProductScreen.name,
+                  arguments: product,
+                );
+              },
+              icon: const Icon(Icons.edit),
+            ),
+            IconButton(
+              onPressed: onDeleteTab,
+              icon: const Icon(Icons.delete),
+            ),
+          ],
+        ),
+        tileColor: Colors.white,
+      ),
     );
   }
 }

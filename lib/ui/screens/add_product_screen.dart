@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 class AddProductScreen extends StatefulWidget {
-   static String name = '/add_product_screen';
+  static String name = '/add_product_screen';
 
   const AddProductScreen({super.key});
 
@@ -9,8 +12,9 @@ class AddProductScreen extends StatefulWidget {
   State<AddProductScreen> createState() => _AddProductScreenState();
 }
 
-class _AddProductScreenState extends State<AddProductScreen> {
+bool _addNewProductInProgress = false;
 
+class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController _nameTEController = TextEditingController();
   final TextEditingController _priceTEController = TextEditingController();
   final TextEditingController _totalPriceTEController = TextEditingController();
@@ -18,15 +22,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController _imageTEController = TextEditingController();
   final TextEditingController _codeTEController = TextEditingController();
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text('Add Product'),
-        backgroundColor: Colors.blue,
+        title: const Text('Add Product'),
+        backgroundColor: Colors.white,
       ),
-      
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -38,12 +43,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Widget _buildProductForm() {
     return Form(
+      key: _formKey,
       child: Column(
         children: [
           TextFormField(
             controller: _nameTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Name', labelText: 'Product name'),
+                border: OutlineInputBorder(),
+                hintText: 'Name',
+                labelText: 'Product name'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product name';
@@ -51,10 +60,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return null;
             },
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: _priceTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Price', labelText: 'Product Price'),
+                border: OutlineInputBorder(),
+                hintText: 'Price',
+                labelText: 'Product Price'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product price';
@@ -62,10 +77,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return null;
             },
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: _totalPriceTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Total price', labelText: 'Product Total Price'),
+                border: OutlineInputBorder(),
+                hintText: 'Total price',
+                labelText: 'Product Total Price'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product total price';
@@ -73,10 +94,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return null;
             },
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: _quantityTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Quantity', labelText: 'Product Quantity'),
+                border: OutlineInputBorder(),
+                hintText: 'Quantity',
+                labelText: 'Product Quantity'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product quantity';
@@ -84,10 +111,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return null;
             },
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: _codeTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Code', labelText: 'Product Code'),
+                border: OutlineInputBorder(),
+                hintText: 'Code',
+                labelText: 'Product Code'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product code';
@@ -95,10 +128,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return null;
             },
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: _imageTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
-                hintText: 'Image url', labelText: 'Product Image'),
+                border: OutlineInputBorder(),
+                hintText: 'Image url',
+                labelText: 'Product Image'),
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product image url';
@@ -107,13 +146,78 @@ class _AddProductScreenState extends State<AddProductScreen> {
             },
           ),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: () {},
-            child: const Text('Add Product',style: TextStyle(color: Colors.white),),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+          Visibility(
+            visible: _addNewProductInProgress == false,
+            replacement: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black,
+              ),
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _addNewProduct();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+              ),
+              child: const Text(
+                'Add Product',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           )
         ],
       ),
     );
+  }
+
+  Future<void> _addNewProduct() async {
+    _addNewProductInProgress = true;
+    setState(() {});
+    Uri uri = Uri.parse('https://crud.teamrabbil.com/api/v1/CreateProduct');
+
+    Map<String, dynamic> requestBody = {
+      "Img": _imageTEController.text.trim(),
+      "ProductCode": _codeTEController.text.trim(),
+      "ProductName": _nameTEController.text.trim(),
+      "Qty": _quantityTEController.text.trim(),
+      "TotalPrice": _totalPriceTEController.text.trim(),
+      "UnitPrice": _priceTEController.text.trim()
+    };
+
+    Response response = await post(
+      uri,
+      headers: {'Content-type': 'application/json'},
+      body: jsonEncode(requestBody),
+    );
+
+    _addNewProductInProgress = false;
+    setState(() {});
+    if (response.statusCode == 200) {
+      _clearTextFields();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('New product added!'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('New product add failed! Try again.'),
+        ),
+      );
+    }
+  }
+
+  void _clearTextFields() {
+    _nameTEController.clear();
+    _codeTEController.clear();
+    _priceTEController.clear();
+    _totalPriceTEController.clear();
+    _imageTEController.clear();
+    _quantityTEController.clear();
   }
 
   @override
@@ -126,5 +230,4 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _quantityTEController.dispose();
     super.dispose();
   }
-
 }

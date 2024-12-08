@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'crudApp.dart';
 
 void main() {
-  runApp(const CRUDapp());
+  runApp(const CRUDApp());
 }
-

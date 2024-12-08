@@ -1,4 +1,5 @@
-# crud
+# CRUD APP
+Create, read, Update, Detete
 
 A new Flutter project.
 
