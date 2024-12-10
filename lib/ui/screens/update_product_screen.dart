@@ -94,23 +94,6 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
             height: 10,
           ),
           TextFormField(
-            controller: _totalPriceTEController,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Total price',
-                labelText: 'Product Total Price'),
-            validator: (String? value) {
-              if (value?.trim().isEmpty ?? true) {
-                return 'Enter product total price';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          TextFormField(
             controller: _quantityTEController,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: const InputDecoration(
@@ -120,6 +103,23 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
             validator: (String? value) {
               if (value?.trim().isEmpty ?? true) {
                 return 'Enter product quantity';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _totalPriceTEController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Total price',
+                labelText: 'Product Total Price'),
+            validator: (String? value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Enter product total price';
               }
               return null;
             },
