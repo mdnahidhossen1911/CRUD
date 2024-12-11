@@ -33,6 +33,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: const Text('Product'),
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         actions: [
           IconButton(
               onPressed: () {
@@ -67,7 +68,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   product: productList[index],
                   onDeleteTab: () {
                     // TODO Delete
-                    _deleteItemDialog(productList[index]);
+                    _deleteItemDialog(productList[index], index);
                     setState(() {});
                   },
                 );
@@ -79,7 +80,39 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  void _deleteItemDialog(Product product) {
+  /// Api call : Get Product List
+  Future<void> _getProuctList() async {
+    _getProductListprogress = true;
+    Uri uri = Uri.parse('https://crud.teamrabbil.com/api/v1/ReadProduct');
+    Response response = await get(uri);
+    print(response.body);
+    if (response.statusCode == 200) {
+      final decodedData = jsonDecode(response.body);
+
+      if (productList.isNotEmpty) productList.clear();
+
+      for (Map<String, dynamic> p in decodedData['data']) {
+        Product product = Product(
+          id: p['_id'],
+          productName: p['ProductName'],
+          productCode: p['ProductCode'],
+          quantity: p['Qty'],
+          unitPrice: p['UnitPrice'],
+          image: p['Img'],
+          totalPrice: p['TotalPrice'],
+          createdDate: p['CreatedDate'],
+        );
+        productList.add(product);
+      }
+      setState(() {});
+    }
+
+    _getProductListprogress = false;
+    setState(() {});
+  }
+
+  // TODO Show Delete Item Dialog
+  void _deleteItemDialog(Product product, int index) {
     showDialog(
       context: context,
       builder: (context) {
@@ -133,7 +166,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  _deletedProduct('${product.id}');
+                  _deletedProduct('${product.id}', index);
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
@@ -148,38 +182,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Future<void> _getProuctList() async {
-    _getProductListprogress = true;
-    Uri uri = Uri.parse('https://crud.teamrabbil.com/api/v1/ReadProduct');
-    Response response = await get(uri);
-    print(response.body);
-    if (response.statusCode == 200) {
-      final decodedData = jsonDecode(response.body);
-
-      if (productList.isNotEmpty) productList.clear();
-
-      for (Map<String, dynamic> p in decodedData['data']) {
-        Product product = Product(
-          id: p['_id'],
-          productName: p['ProductName'],
-          productCode: p['ProductCode'],
-          quantity: p['Qty'],
-          unitPrice: p['UnitPrice'],
-          image: p['Img'],
-          totalPrice: p['TotalPrice'],
-          createdDate: p['CreatedDate'],
-        );
-        productList.add(product);
-      }
-      setState(() {});
-    }
-
-    _getProductListprogress = false;
-    setState(() {});
-  }
-
-  // TODO here delete code
-  Future<void> _deletedProduct(String ID) async {
+  /// Delete Product API Call
+  Future<void> _deletedProduct(String ID, int index) async {
     Uri uri = Uri.parse('https://crud.teamrabbil.com/api/v1/DeleteProduct/$ID');
     Response response = await get(uri);
     if (response.statusCode == 200) {
@@ -189,8 +193,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       );
 
-      Navigator.pop(context);
-      _getProuctList();
+      productList.removeAt(index);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
